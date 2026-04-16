@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../../lib/api'
 import { C } from '../../lib/cn'
+import { DISCIPLINES, GOALS, CONDITIONS } from '../Onboarding'
 
 const DIFFICULTY_OPTIONS = [
   { value: 'beginner',     label: 'Principiante' },
@@ -160,6 +161,10 @@ function PublishModal({ routine, onClose, onSuccess }) {
     duration_weeks:          routine.duration_weeks ?? '',
     days_per_week:           routine.days_per_week ?? '',
     cover_image:             routine.cover_image ?? '',
+    discipline:              routine.discipline ?? '',
+    target_goals:            routine.target_goals ?? [],
+    target_level:            routine.target_level ?? '',
+    contraindications:       routine.contraindications ?? [],
   })
   const [error, setError] = useState('')
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
@@ -252,6 +257,78 @@ function PublishModal({ routine, onClose, onSuccess }) {
               <label className={C.label}>Portada (URL imagen) <span className="text-zinc-600 font-normal">(opc.)</span></label>
               <input className={C.input} type="url" placeholder="https://..."
                 value={form.cover_image} onChange={set('cover_image')} />
+            </div>
+          </div>
+
+          {/* Disciplina y audiencia */}
+          <div className="pt-2 border-t border-zinc-800 space-y-3">
+            <p className="text-xs font-semibold text-zinc-400">Para quién es esta rutina</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={C.label}>Disciplina</label>
+                <select className={C.input} value={form.discipline} onChange={set('discipline')}>
+                  <option value="">Sin especificar</option>
+                  {DISCIPLINES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={C.label}>Nivel objetivo</label>
+                <select className={C.input} value={form.target_level} onChange={set('target_level')}>
+                  <option value="">Cualquier nivel</option>
+                  {DIFFICULTY_OPTIONS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Objetivos */}
+            <div>
+              <label className={C.label}>Objetivos que trabaja <span className="font-normal text-zinc-600">(opc.)</span></label>
+              <div className="grid grid-cols-2 gap-1.5 mt-1.5">
+                {GOALS.map(g => (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => setForm(f => ({
+                      ...f,
+                      target_goals: f.target_goals.includes(g.value)
+                        ? f.target_goals.filter(x => x !== g.value)
+                        : [...f.target_goals, g.value],
+                    }))}
+                    className={`px-2.5 py-2 rounded-xl text-xs font-medium border transition-all text-left ${
+                      form.target_goals.includes(g.value)
+                        ? 'bg-orange-500/15 border-orange-500 text-orange-300'
+                        : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                    }`}>
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Contraindicaciones */}
+            <div>
+              <label className={C.label}>No apta para <span className="font-normal text-zinc-600">(opc.)</span></label>
+              <p className="text-xs text-zinc-600 mb-1.5">Seleccioná condiciones físicas con las que esta rutina puede ser riesgosa.</p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {CONDITIONS.map(c => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => setForm(f => ({
+                      ...f,
+                      contraindications: f.contraindications.includes(c.value)
+                        ? f.contraindications.filter(x => x !== c.value)
+                        : [...f.contraindications, c.value],
+                    }))}
+                    className={`px-2.5 py-2 rounded-xl text-xs font-medium border transition-all text-left ${
+                      form.contraindications.includes(c.value)
+                        ? 'bg-red-500/15 border-red-700 text-red-300'
+                        : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                    }`}>
+                    {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

@@ -5,17 +5,22 @@ import api from '../../lib/api'
 import { C } from '../../lib/cn'
 import AvatarUpload from '../../components/AvatarUpload'
 import PremiumGate from '../../components/PremiumGate'
+import { DISCIPLINES, GOALS, FITNESS_LEVELS, CONDITIONS } from '../Onboarding'
 
 export default function TrainerProfile() {
   const user = getUser()
   const qc   = useQueryClient()
 
   const [form, setForm]   = useState({
-    name:       user?.name       ?? '',
-    weight_kg:  user?.weight_kg  ?? '',
-    height_cm:  user?.height_cm  ?? '',
-    birth_date: user?.birth_date ?? '',
-    gender:     user?.gender     ?? '',
+    name:          user?.name          ?? '',
+    weight_kg:     user?.weight_kg     ?? '',
+    height_cm:     user?.height_cm     ?? '',
+    birth_date:    user?.birth_date    ?? '',
+    gender:        user?.gender        ?? '',
+    discipline:    user?.discipline    ?? '',
+    goal:          user?.goal          ?? '',
+    fitness_level: user?.fitness_level ?? '',
+    conditions:    user?.conditions    ?? [],
   })
   const [saved, setSaved] = useState(false)
 
@@ -127,6 +132,58 @@ export default function TrainerProfile() {
             <option value="other">Otro</option>
           </select>
         </div>
+
+        {/* Deporte y objetivo */}
+        <div className="pt-2 border-t border-zinc-800 space-y-3">
+          <p className="text-xs font-semibold text-zinc-400">Deporte y objetivo</p>
+          <div>
+            <label className={C.label}>Disciplina</label>
+            <select className={C.input} value={form.discipline} onChange={set('discipline')}>
+              <option value="">Sin especificar</option>
+              {DISCIPLINES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={C.label}>Objetivo principal</label>
+            <select className={C.input} value={form.goal} onChange={set('goal')}>
+              <option value="">Sin especificar</option>
+              {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={C.label}>Nivel de condición</label>
+            <select className={C.input} value={form.fitness_level} onChange={set('fitness_level')}>
+              <option value="">Sin especificar</option>
+              {FITNESS_LEVELS.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Condiciones físicas */}
+        <div className="pt-2 border-t border-zinc-800 space-y-2">
+          <p className="text-xs font-semibold text-zinc-400">Condiciones físicas <span className="font-normal text-zinc-600">(opcional)</span></p>
+          <div className="grid grid-cols-2 gap-2">
+            {CONDITIONS.map(c => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => setForm(f => ({
+                  ...f,
+                  conditions: f.conditions.includes(c.value)
+                    ? f.conditions.filter(x => x !== c.value)
+                    : [...f.conditions, c.value],
+                }))}
+                className={`px-2.5 py-2 rounded-xl text-xs font-medium border transition-all text-left ${
+                  form.conditions.includes(c.value)
+                    ? 'bg-orange-500/15 border-orange-500 text-orange-300'
+                    : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'
+                }`}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button className={C.primary} onClick={() => updateMe.mutate()} disabled={updateMe.isPending}>
           {updateMe.isPending ? 'Guardando...' : saved ? '¡Guardado!' : 'Guardar cambios'}
         </button>
