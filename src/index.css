@@ -17,6 +17,19 @@ body {
 /* Safe area para iOS */
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
 
+/* Ícono del calendario en inputs date — forzar blanco en tema oscuro */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.8);
+  cursor: pointer;
+}
+
+/* Separación interna de selects y date inputs del borde izquierdo */
+select,
+input[type="date"] {
+  padding-left: 1rem;
+}
+
 /* Toast animation */
 @keyframes fadeInDown {
   from { opacity: 0; transform: translate(-50%, -12px); }

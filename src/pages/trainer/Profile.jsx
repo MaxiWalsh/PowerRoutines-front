@@ -17,8 +17,8 @@ export default function TrainerProfile() {
     height_cm:     user?.height_cm     ?? '',
     birth_date:    user?.birth_date    ?? '',
     gender:        user?.gender        ?? '',
-    discipline:    user?.discipline    ?? '',
-    goal:          user?.goal          ?? '',
+    disciplines:   user?.disciplines   ?? [],
+    goals:         user?.goals         ?? [],
     fitness_level: user?.fitness_level ?? '',
     conditions:    user?.conditions    ?? [],
   })
@@ -137,18 +137,34 @@ export default function TrainerProfile() {
         <div className="pt-2 border-t border-zinc-800 space-y-3">
           <p className="text-xs font-semibold text-zinc-400">Deporte y objetivo</p>
           <div>
-            <label className={C.label}>Disciplina</label>
-            <select className={C.input} value={form.discipline} onChange={set('discipline')}>
-              <option value="">Sin especificar</option>
-              {DISCIPLINES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-            </select>
+            <label className={C.label}>
+              Deportes / Actividades
+              {form.disciplines.length > 0 && <span className="ml-1.5 text-orange-400">{form.disciplines.length} sel.</span>}
+            </label>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {DISCIPLINES.map(d => (
+                <button key={d.value} type="button"
+                  onClick={() => setForm(f => ({ ...f, disciplines: f.disciplines.includes(d.value) ? f.disciplines.filter(x => x !== d.value) : [...f.disciplines, d.value] }))}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all ${form.disciplines.includes(d.value) ? 'bg-orange-500 border-orange-500 text-white' : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'}`}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
-            <label className={C.label}>Objetivo principal</label>
-            <select className={C.input} value={form.goal} onChange={set('goal')}>
-              <option value="">Sin especificar</option>
-              {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
-            </select>
+            <label className={C.label}>
+              Objetivos
+              {form.goals.length > 0 && <span className="ml-1.5 text-orange-400">{form.goals.length} sel.</span>}
+            </label>
+            <div className="flex flex-wrap gap-1.5 mt-1">
+              {GOALS.map(g => (
+                <button key={g.value} type="button"
+                  onClick={() => setForm(f => ({ ...f, goals: f.goals.includes(g.value) ? f.goals.filter(x => x !== g.value) : [...f.goals, g.value] }))}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-medium border transition-all ${form.goals.includes(g.value) ? 'bg-orange-500 border-orange-500 text-white' : 'bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-white'}`}>
+                  {g.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div>
             <label className={C.label}>Nivel de condición</label>

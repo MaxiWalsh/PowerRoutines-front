@@ -1,4 +1,4 @@
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom'
 import { clearSession } from '../lib/auth'
 import api from '../lib/api'
 
@@ -21,6 +21,7 @@ const trainerNav = [
 export default function Layout({ role }) {
   const navigate  = useNavigate()
   const navItems  = role === 'trainer' ? trainerNav : studentNav
+  const homeRoute = role === 'trainer' ? '/trainer/routines' : '/student/routines'
 
   async function handleLogout() {
     try { await api.post('/users/logout') } catch {}
@@ -33,15 +34,15 @@ export default function Layout({ role }) {
 
       {/* ── Desktop sidebar ─────────────────────────────────────── */}
       <aside className="hidden md:flex flex-col w-56 xl:w-64 shrink-0 border-r border-zinc-800 sticky top-0 h-screen">
-        {/* Logo */}
-        <div className="px-5 py-5 border-b border-zinc-800">
+        {/* Logo — clickeable → home */}
+        <Link to={homeRoute} className="px-5 py-5 border-b border-zinc-800 hover:bg-zinc-800/40 transition-colors">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center shrink-0">
               <DumbbellIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-sm text-white tracking-tight">Power Routines</span>
           </div>
-        </div>
+        </Link>
 
         {/* Nav vertical */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
@@ -73,12 +74,13 @@ export default function Layout({ role }) {
 
       {/* ── Mobile top bar ──────────────────────────────────────── */}
       <header className="md:hidden sticky top-0 z-10 bg-[#1e1e1e]/95 backdrop-blur border-b border-zinc-700 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
+        {/* Logo clickeable */}
+        <Link to={homeRoute} className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-orange-500 flex items-center justify-center">
             <DumbbellIcon className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-sm text-white tracking-tight">Power Routines</span>
-        </div>
+        </Link>
         <button onClick={handleLogout}
           className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors">
           Salir
@@ -92,16 +94,18 @@ export default function Layout({ role }) {
         </div>
       </main>
 
-      {/* ── Mobile bottom nav ───────────────────────────────────── */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-800/95 backdrop-blur border-t border-zinc-700 flex items-center justify-around px-2 z-10">
+      {/* ── Mobile bottom nav — scrollable ──────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-zinc-800/95 backdrop-blur border-t border-zinc-700 z-10
+                      flex items-center overflow-x-auto scrollbar-none">
         {navItems.map(({ to, label, icon }) => (
           <NavLink key={to} to={to}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 py-3 px-6 text-xs font-medium transition-colors
+              `flex flex-col items-center gap-1 py-3 shrink-0 text-xs font-medium transition-colors
+               flex-1 min-w-[64px]
                ${isActive ? 'text-orange-500' : 'text-zinc-500 hover:text-zinc-300'}`
             }>
             {icon}
-            {label}
+            <span className="truncate w-full text-center px-1">{label}</span>
           </NavLink>
         ))}
       </nav>

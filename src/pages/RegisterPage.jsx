@@ -51,8 +51,8 @@ export default function RegisterPage() {
       }
       const { data } = await api.post('/users/register', payload)
       saveSession(data.user, data.token)
-      // Nuevo usuario: ir al wizard de onboarding para personalizar el perfil
-      navigate('/onboarding', { replace: true })
+      // Trainers van directo al dashboard. Students pasan por el wizard de onboarding.
+      navigate(data.user.role === 'trainer' ? '/trainer/routines' : '/onboarding', { replace: true })
     } catch (err) {
       const msgs = err.response?.data?.errors
       setError(msgs ? Object.values(msgs).flat().join(' ') : 'Error al registrarse.')

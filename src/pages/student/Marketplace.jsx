@@ -29,7 +29,7 @@ export default function StudentMarketplace() {
   const [selected, setSelected]   = useState(null)
   const [statusMsg, setStatusMsg] = useState(null)
 
-  const hasProfile = !!(user?.discipline)
+  const hasProfile = !!(user?.disciplines?.length > 0)
 
   // Detectar retorno de Mercado Pago
   useEffect(() => {
@@ -135,11 +135,13 @@ export default function StudentMarketplace() {
       {/* Sección "Para vos" — solo si tiene perfil y hay resultados */}
       {hasProfile && recommended.length > 0 && (
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-xs font-semibold text-orange-400 uppercase tracking-wider">Para vos</p>
-            <span className="text-xs text-zinc-600">
-              · {DISCIPLINES.find(d => d.value === user?.discipline)?.label ?? user?.discipline}
-            </span>
+            {(user?.disciplines ?? []).slice(0, 3).map(d => (
+              <span key={d} className="text-xs text-zinc-500">
+                · {DISCIPLINES.find(x => x.value === d)?.label ?? d}
+              </span>
+            ))}
           </div>
           <div className="space-y-2">
             {recommended.slice(0, 3).map(routine => (
@@ -168,7 +170,7 @@ export default function StudentMarketplace() {
       )}
 
       {/* Filtros por disciplina */}
-      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 pt-1">
         {DISCIPLINE_FILTERS.map(f => (
           <button key={f.key} onClick={() => setDisciplineFilter(f.key)}
             className={`shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-colors ${
