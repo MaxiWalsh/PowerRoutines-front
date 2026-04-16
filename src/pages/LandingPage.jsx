@@ -233,7 +233,7 @@ export default function LandingPage() {
           <div className="w-6 h-6 rounded-lg bg-orange-500 flex items-center justify-center">
             <DumbbellIcon className="w-4 h-4 text-white" />
           </div>
-          <span className="text-xs text-zinc-600">Power Routines © 2025</span>
+          <span className="text-xs text-zinc-600">Power Routines © 2026</span>
         </div>
       </footer>
 
