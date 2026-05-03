@@ -167,16 +167,34 @@ function PublishModal({ routine, onClose, onSuccess }) {
     contraindications:       routine.contraindications ?? [],
   })
   const [error, setError] = useState('')
+  const [coverFile, setCoverFile] = useState(null)
+  const [coverPreview, setCoverPreview] = useState(routine.cover_image ?? '')
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
   const publish = useMutation({
-    mutationFn: () => api.post(`/routines/${routine.id}/publish`, {
-      ...form,
-      price:          parseFloat(form.price) || 0,
-      duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks) : undefined,
-      days_per_week:  form.days_per_week  ? parseInt(form.days_per_week)  : undefined,
-      cover_image:    form.cover_image    || undefined,
-    }),
+    mutationFn: () => {
+      if (coverFile) {
+        const fd = new FormData()
+        fd.append('price',                   parseFloat(form.price) || 0)
+        fd.append('marketplace_description', form.marketplace_description)
+        fd.append('difficulty',              form.difficulty)
+        if (form.duration_weeks) fd.append('duration_weeks', parseInt(form.duration_weeks))
+        if (form.days_per_week)  fd.append('days_per_week',  parseInt(form.days_per_week))
+        if (form.discipline)     fd.append('discipline',     form.discipline)
+        if (form.target_level)   fd.append('target_level',   form.target_level)
+        form.target_goals.forEach(g => fd.append('target_goals[]', g))
+        form.contraindications.forEach(c => fd.append('contraindications[]', c))
+        fd.append('cover_image_file', coverFile)
+        return api.post(`/routines/${routine.id}/publish`, fd)
+      }
+      return api.post(`/routines/${routine.id}/publish`, {
+        ...form,
+        price:          parseFloat(form.price) || 0,
+        duration_weeks: form.duration_weeks ? parseInt(form.duration_weeks) : undefined,
+        days_per_week:  form.days_per_week  ? parseInt(form.days_per_week)  : undefined,
+        cover_image:    form.cover_image    || undefined,
+      })
+    },
     onSuccess,
     onError: err => setError(err.response?.data?.message ?? 'Error al publicar.'),
   })
@@ -216,7 +234,10 @@ function PublishModal({ routine, onClose, onSuccess }) {
 
           {/* Descripción para el marketplace */}
           <div>
-            <label className={C.label}>Descripción para el marketplace</label>
+            <label className={C.label}>
+              Descripción para el marketplace{' '}
+              <span className="text-red-500">*</span>
+            </label>
             <textarea
               className={`${C.input} resize-none`}
               rows={3}
@@ -224,7 +245,10 @@ function PublishModal({ routine, onClose, onSuccess }) {
               value={form.marketplace_description}
               onChange={set('marketplace_description')}
             />
-            <p className="text-xs text-zinc-600 mt-1">{form.marketplace_description.length}/600</p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-xs text-red-400">Requerida para publicar</p>
+              <p className="text-xs text-zinc-600">{form.marketplace_description.length}/600</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -254,9 +278,26 @@ function PublishModal({ routine, onClose, onSuccess }) {
 
             {/* Imagen de portada */}
             <div>
-              <label className={C.label}>Portada (URL imagen) <span className="text-zinc-600 font-normal">(opc.)</span></label>
-              <input className={C.input} type="url" placeholder="https://..."
-                value={form.cover_image} onChange={set('cover_image')} />
+              <label className={C.label}>Portada <span className="text-zinc-600 font-normal">(opc.)</span></label>
+              <input
+                className={C.input}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={e => {
+                  const file = e.target.files?.[0] ?? null
+                  setCoverFile(file)
+                  if (file) {
+                    setCoverPreview(URL.createObjectURL(file))
+                  }
+                }}
+              />
+              {coverPreview && (
+                <img
+                  src={coverPreview}
+                  alt="Vista previa de portada"
+                  className="mt-2 w-full h-24 object-cover rounded-lg border border-zinc-700"
+                />
+              )}
             </div>
           </div>
 

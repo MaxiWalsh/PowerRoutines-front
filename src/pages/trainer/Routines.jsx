@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import api from '../../lib/api'
 import { C } from '../../lib/cn'
 
 export default function TrainerRoutines() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const [showNew, setShowNew] = useState(false)
+  const [showPhoto, setShowPhoto] = useState(false)
   const [form, setForm] = useState({ name: '', description: '', scope: 'personal' })
 
   const { data, isLoading } = useQuery({
@@ -43,12 +45,30 @@ export default function TrainerRoutines() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">Rutinas</h1>
-        <button
-          onClick={() => setShowNew(true)}
-          className="px-3 py-2 rounded-xl text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors">
-          + Nueva
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowPhoto(true)}
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+            📷 Desde foto
+          </button>
+          <button
+            onClick={() => setShowNew(true)}
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors">
+            + Nueva
+          </button>
+        </div>
       </div>
+
+      {showPhoto && (
+        <PhotoRoutineModal
+          onClose={() => setShowPhoto(false)}
+          onSuccess={id => {
+            setShowPhoto(false)
+            qc.invalidateQueries(['trainer-routines'])
+            navigate(`/trainer/routines/${id}/edit`)
+          }}
+        />
+      )}
 
       {showNew && (
         <div className={`${C.cardP} space-y-3`}>
@@ -113,6 +133,82 @@ export default function TrainerRoutines() {
             </button>
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── PhotoRoutineModal ────────────────────────────────────────────────────────
+
+function PhotoRoutineModal({ onClose, onSuccess }) {
+  const [file, setFile] = useState(null)
+  const [preview, setPreview] = useState(null)
+  const [error, setError] = useState(null)
+  const inputRef = useRef(null)
+
+  const fromPhoto = useMutation({
+    mutationFn: (photo) => {
+      const fd = new FormData()
+      fd.append('photo', photo)
+      return api.post('/routines/from-photo', fd)
+    },
+    onSuccess: ({ data }) => {
+      onSuccess(data.routine_id)
+    },
+    onError: (err) => {
+      setError(err.response?.data?.message ?? 'Error al analizar la imagen.')
+    },
+  })
+
+  function handleFile(e) {
+    const selected = e.target.files[0]
+    if (!selected) return
+    setFile(selected)
+    setError(null)
+    setPreview(URL.createObjectURL(selected))
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+      <div className={`${C.cardP} w-full max-w-sm space-y-4`}>
+        <div className="flex items-center justify-between">
+          <p className="font-semibold text-sm text-white">Crear rutina desde foto</p>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors text-lg leading-none">✕</button>
+        </div>
+
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="border-2 border-dashed border-zinc-700 hover:border-zinc-500 rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors">
+          {preview ? (
+            <img src={preview} alt="Vista previa" className="w-full max-h-40 object-contain rounded-lg" />
+          ) : (
+            <>
+              <span className="text-3xl">📷</span>
+              <p className="text-zinc-400 text-xs text-center">Tocá para seleccionar una foto de entrenamiento</p>
+            </>
+          )}
+          <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+        </div>
+
+        {file && (
+          <p className="text-zinc-500 text-xs truncate">📎 {file.name}</p>
+        )}
+
+        {error && (
+          <p className="text-red-400 text-xs">{error}</p>
+        )}
+
+        <div className="flex gap-2">
+          <button
+            className={C.primary}
+            onClick={() => fromPhoto.mutate(file)}
+            disabled={!file || fromPhoto.isPending}>
+            {fromPhoto.isPending ? 'Analizando imagen con IA...' : 'Generar rutina'}
+          </button>
+          <button className={C.outline} onClick={onClose} disabled={fromPhoto.isPending}>
+            Cancelar
+          </button>
+        </div>
       </div>
     </div>
   )
