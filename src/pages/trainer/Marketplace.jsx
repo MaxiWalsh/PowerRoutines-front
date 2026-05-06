@@ -79,6 +79,13 @@ export default function TrainerMarketplace() {
           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Publicadas en marketplace</p>
           {published.map(routine => (
             <div key={routine.id} className={`${C.cardP} space-y-2`}>
+              {routine.cover_image && (
+                <img
+                  src={routine.cover_image}
+                  alt="Portada"
+                  className="w-full h-32 object-cover rounded-xl border border-zinc-700"
+                />
+              )}
               <div className="flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm text-white truncate">{routine.name}</p>
@@ -113,18 +120,27 @@ export default function TrainerMarketplace() {
         <div className="space-y-2">
           <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Mis rutinas · Sin publicar</p>
           {unpublished.map(routine => (
-            <div key={routine.id} className={`${C.cardP} flex items-center justify-between gap-2`}>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-white truncate">{routine.name}</p>
-                <p className="text-xs text-zinc-500">
-                  {routine.blocks?.length ?? 0} día{(routine.blocks?.length ?? 0) !== 1 ? 's' : ''}
-                </p>
+            <div key={routine.id} className={`${C.cardP} space-y-2`}>
+              {routine.cover_image && (
+                <img
+                  src={routine.cover_image}
+                  alt="Portada"
+                  className="w-full h-24 object-cover rounded-xl border border-zinc-700"
+                />
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-white truncate">{routine.name}</p>
+                  <p className="text-xs text-zinc-500">
+                    {routine.blocks?.length ?? 0} día{(routine.blocks?.length ?? 0) !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setPublishModal(routine)}
+                  className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors">
+                  Publicar
+                </button>
               </div>
-              <button
-                onClick={() => setPublishModal(routine)}
-                className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-semibold bg-orange-500 hover:bg-orange-600 text-white transition-colors">
-                Publicar
-              </button>
             </div>
           ))}
         </div>
